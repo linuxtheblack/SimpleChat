@@ -24,25 +24,14 @@ Route::get('/', function () {
 });
 
 
-Route::get('/chat', [ChatController::class, 'index'])
+Route::get('/chats', [ChatController::class, 'index'])
     ->middleware(['auth'])
-    ->name('chat');
+    ->name('chats');
 
-Route::get('/chat/{uuid}', function (String $uuid, Request $request) {
-    $chat = Chat::firstWhere('uuid', $uuid);
+Route::get('/chats/{uuid}', [ChatController::class, 'show'])
+     ->middleware(['auth'])
+     ->name('chatSingle');
 
-    //checks if chat exists
-    if ($chat === null)
-        return redirect('/chat');
-
-    $subs = $chat->users;
-
-    //checks if user have access to the chat
-    if (!$subs->find(Auth::id()))
-        return redirect('/chat');
-
-    return view('chat', ['messages' => [1,2,3,4], 'user' => Auth::user(), 'id' => $uuid]);
-});
 
 Route::post('/chat/{uuid}', function (String $id, Request $request){
     $sender = Auth::user();
