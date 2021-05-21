@@ -8,11 +8,11 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                @foreach(\Illuminate\Support\Facades\Auth::user()->chats as $chat)
+                @foreach($chats as $chat)
                     <div class="p-6 bg-white border-b border-gray-200 flex">
                         <div class="w-1/2">
                             <h3 class="font-bold text-xl"><a class="text-red-400"
-                                                             href="/chat/{{ $chat->uuid }}">{{ $chat->name }}</a></h3>
+                                                             href="/chats/{{ $chat->uuid }}">{{ $chat->name }}</a></h3>
                         </div>
                         <div class="w-1/2 text-right">
                             <ul class="list-none">
