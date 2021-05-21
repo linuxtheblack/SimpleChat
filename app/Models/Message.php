@@ -22,11 +22,11 @@ class Message extends Model
 
     public function chat()
     {
-        $this->belongsTo(Chat::class);
+        return $this->belongsTo(Chat::class);
     }
 
     public function user()
     {
-        $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 }
