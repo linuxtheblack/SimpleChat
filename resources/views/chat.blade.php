@@ -78,10 +78,10 @@
                     name: '{{ $user->name }}',
                     nameInput: '{{ $user->name }}'
                 },
-                log: [],
+                log: {!! $messages !!},
                 send() {
                     if (this.input !== '') {
-                        axios.post('/chat/{{ $id }}', {msg: this.input})
+                        axios.post('/chats/{{ $id }}', {msg: this.input})
 
                         this.input = '';
                     }

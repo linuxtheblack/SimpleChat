@@ -1,10 +1,8 @@
 <?php
 
-use App\Events\UserMessageSent;
 use App\Http\Controllers\ChatController;
-use App\Models\Chat;
-use App\Models\Message;
-use Illuminate\Http\Request;
+use App\Http\Controllers\MessageController;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -18,38 +16,23 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+Auth::login(User::all()->first());
 Route::get('/', function () {
     return view('welcome');
 });
 
 
 Route::get('/chats', [ChatController::class, 'index'])
-    ->middleware(['auth'])
-    ->name('chats');
+     ->middleware(['auth'])
+     ->name('chats');
 
 Route::get('/chats/{uuid}', [ChatController::class, 'show'])
      ->middleware(['auth'])
      ->name('chatSingle');
 
 
-Route::post('/chat/{uuid}', function (String $id, Request $request){
-    $sender = Auth::user();
-    $chat   = Chat::where('uuid', $id)->first();
+Route::post('/chats/{uuid}', [MessageController::class, 'store'])
+     ->middleware(['auth'])
+     ->name('chatSingleStore');
 
-    if (!$sender->chats->contains($chat->id))
-        return ['code' => 401, 'msg' => 'Access denied'];
-
-    $msg = new Message();
-    $msg->message = $request->post('msg');
-    $msg->user_id = $sender->id;
-    $msg->chat_id = $chat->id;
-    $msg->save();
-
-    //Send to Pusher!
-    UserMessageSent::dispatch(['msg' => $msg->message, 'from' => $sender->name]);
-
-    return ['code' => 200, 'msg' => 'Message sent'];
-})->middleware(['auth']);
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

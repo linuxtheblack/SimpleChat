@@ -44,7 +44,7 @@ class ChatController extends Controller
 
         //checks if chat exists
         if ($chat === null) {
-            return redirect('/chat');
+            return redirect('/chats');
         }
 
         $subs = $chat->users;
