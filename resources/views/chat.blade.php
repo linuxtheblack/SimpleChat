@@ -1,10 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('My Chats') }}
-        </h2>
+        <div class="flex">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight flex-grow">
+                {{ __('My Chats') }}
+            </h2>
+        </div>
     </x-slot>
     <div id="chat" x-data="chat()" x-init="init()">
+        <template x-if="isTyping">
+            <div class="absolute bottom-3 left-12">
+                <p class="flex-none text-sm text-gray-500">
+                    <template x-for="typist in peersTyping">
+                        <span x-text="typist + ', '"></span>
+                        {{-- TODO: Fix comma on last person --}}
+                    </template>
+                </p>
+            </div>
+        </template>
+
+
         <!-- This example requires Tailwind CSS v2.0+ -->
         <div class="flex h-screen antialiased text-gray-800">
             <div class="flex flex-row h-full w-full overflow-x-hidden pt-32">
@@ -31,11 +45,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-row items-center h-16 rounded-xl bg-white px-4 py-8 m-8 mt-0">
+                        <div class="flex flex-row items-center h-20 rounded-xl bg-white shadow px-4 py-8 m-8 mt-0">
                             <div class="flex-grow ml-4">
                                 <div class="relative w-full">
                                     <form x-on:submit.prevent="send()">
-                                        <input type="text" x-model="input"
+                                        <input type="text" x-model="input" @keydown="pingPeersTyping()"
                                                class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"/>
                                     </form>
                                 </div>
@@ -73,10 +87,12 @@
         function chat() {
             return {
                 input: '',
+                isTyping: false,
+                peersTyping: [],
+                channel: '',
                 user: {
                     id: {{ $user->id }},
                     name: '{{ $user->name }}',
-                    nameInput: '{{ $user->name }}'
                 },
                 log: {!! $messages !!},
                 send() {
@@ -87,17 +103,33 @@
                     }
                 },
                 init() {
-                    window.Echo.channel('.public.chat').listen('UserMessageSent', e => this.pushMsg({
-                        sender: e.sender,
-                        msg: e.msg
-                    }));
+                    this.channel = window.Echo.private('.chat.{{ $id }}');
+                    this.channel
+                        .listen('UserMessageSent', e => this.pushMsg({
+                            sender: e.sender,
+                            msg: e.msg
+                        }))
+                        .listenForWhisper('typing', (e) => {
+                            if (this.peersTyping.indexOf(e.name) === -1) this.peersTyping.push(e.name);
+                            this.isTyping = true;
+                            //TODO: Remove people after 2000ms
+                        });
+
+                    this.chatScrollToBottom();
                 },
                 pushMsg(msg) {
+                    this.log.push(msg);
+                    this.chatScrollToBottom();
+                },
+                chatScrollToBottom() {
                     let chatlog = document.getElementById('chatlog');
 
-                    this.log.push(msg);
-                    setTimeout(() => chatlog.scrollTop = chatlog.scrollHeight, 100)
-                    ;
+                    setTimeout(() => chatlog.scrollTop = chatlog.scrollHeight, 100);
+                },
+                pingPeersTyping() {
+                    this.channel.whisper('typing', {
+                        name: this.user.name,
+                    });
                 }
             }
         }

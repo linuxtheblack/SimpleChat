@@ -47,14 +47,18 @@ class ChatController extends Controller
             return redirect('/chats');
         }
 
-        $subs = $chat->users;
-
         //checks if user have access to the chat
-        if (!$subs->find(Auth::id())) {
-            return redirect('/chat');
+        if (!$chat->userHasAccess(Auth::id())) {
+            return redirect('/chats');
         }
 
-        return view('chat', ['messages' => [1, 2, 3, 4], 'user' => Auth::user(), 'id' => $uuid]);
+        $messages = collect();
+
+        foreach ($chat->messages as $msg) {
+            $messages->push(['msg' => $msg->message, 'sender' => $msg->user->name]);
+        }
+
+        return view('chat', ['messages' => $messages->toJson(), 'user' => Auth::user(), 'id' => $uuid]);
     }
 
     /**

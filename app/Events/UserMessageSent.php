@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\Message;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -17,6 +15,8 @@ class UserMessageSent implements ShouldBroadcast
 
     public string $sender;
     public string $msg;
+    public string $channel;
+
     /**
      * Create a new event instance.
      *
@@ -24,8 +24,9 @@ class UserMessageSent implements ShouldBroadcast
      */
     public function __construct(array $data)
     {
-        $this->sender = $data['from'];
-        $this->msg = $data['msg'];
+        $this->sender  = $data['from'];
+        $this->msg     = $data['msg'];
+        $this->channel = ".chat.{$data['channel']}";
     }
 
     /**
@@ -35,6 +36,6 @@ class UserMessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('.public.chat');
+        return new PrivateChannel($this->channel);
     }
 }

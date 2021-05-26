@@ -23,4 +23,21 @@ class Chat extends Model
     {
         return $this->belongsToMany(User::class);
     }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    /**
+     * Check if user is a part of the chat
+     *
+     * @param int $userId
+     *
+     * @return bool
+     */
+    public function userHasAccess(int $userId): bool
+    {
+        return (bool) $this->users->find($userId);
+    }
 }

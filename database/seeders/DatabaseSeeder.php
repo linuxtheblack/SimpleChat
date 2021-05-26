@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Chat;
+use App\Models\Message;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,6 +16,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+        $users    = User::factory(4)->create();
+        $chat     = Chat::factory(2)->create();
+        $messages = Message::factory(10)->create();
+
+        $chat->each(fn($chat) => $chat->users()->sync($users));
+
+
     }
 }

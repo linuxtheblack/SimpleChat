@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Auth::login(User::all()->first());
+Auth::login(User::find(2));
 Route::get('/', function () {
     return view('welcome');
 });
