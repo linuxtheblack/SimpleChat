@@ -21,8 +21,7 @@ class MessageController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     * TODO: Check if this works
+     * Store a message sent from current logged in user
      *
      * @param \Illuminate\Http\Request $request
      *
