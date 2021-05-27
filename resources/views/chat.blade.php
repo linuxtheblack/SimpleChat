@@ -9,11 +9,17 @@
     <div id="chat" x-data="chat()" x-init="init()">
         <template x-if="isTyping">
             <div class="absolute bottom-3 left-12">
+                <style>
+                    .person-typing ~ .person-typing:before{
+                        content: ', ';
+                        margin-left: -0.25rem;
+                    }
+                </style>
                 <p class="flex-none text-sm text-gray-500">
                     <template x-for="typist in peersTyping">
-                        <span x-text="typist + ', '"></span>
-                        {{-- TODO: Fix comma on last person --}}
+                        <span class="person-typing" x-text="typist.name"></span>
                     </template>
+                    <span> is typing</span>
                 </p>
             </div>
         </template>
@@ -27,7 +33,6 @@
                         <div id="chatlog" class="flex flex-col h-full overflow-x-auto">
                             <div class="flex flex-col h-full">
                                 <div class="grid grid-cols-12 gap-y-2">
-                                    <!--                                TODO: if message from same user don't type name again.-->
                                     <template x-for="(msg, index) in log" :key="index">
                                         <div class="col-start-1 col-end-13 p-3 rounded-lg">
                                             <div class="text-xs text-gray-600"
@@ -110,9 +115,20 @@
                             msg: e.msg
                         }))
                         .listenForWhisper('typing', (e) => {
-                            if (this.peersTyping.indexOf(e.name) === -1) this.peersTyping.push(e.name);
+                            if(this.peersTyping.some(el => el.name === e.name)){
+                                let peer = this.peersTyping.find(peer => peer.name === e.name);
+                                clearTimeout(peer.callback);
+                                peer.callback = this.removePeerTyping(e.name);
+                            }
+                            if (!this.peersTyping.some(el => el.name === e.name)){
+                                this.peersTyping.push({
+                                    name: e.name,
+                                    callback: this.removePeerTyping(e.name)
+                                });
+                            }
                             this.isTyping = true;
                             //TODO: Remove people after 2000ms
+
                         });
 
                     this.chatScrollToBottom();
@@ -130,6 +146,15 @@
                     this.channel.whisper('typing', {
                         name: this.user.name,
                     });
+                },
+                removePeerTyping(name){
+                    return setTimeout(()=>{
+                        this.peersTyping = this.peersTyping.filter((e) => e.name !== name);
+
+                        if (this.peersTyping.length < 1){
+                            this.isTyping = false
+                        }
+                    }, 2000);
                 }
             }
         }
